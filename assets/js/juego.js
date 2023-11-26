@@ -13,8 +13,17 @@ const miModulo = (() => {
         btnDetener: document.getElementById('btnDetener'),
     }
 
+    let btnPedirDisable = false;
+    let isAlert = false;
+
     const main = () => {
         crearDeck();
+        isAlert = false
+        disableButton(false, false);
+        for (let i = 0; i < puntosJugadores.length; i++)
+            puntosJugadores[i] = 0
+        smallJugadores.forEach(element => { element.innerText = 0 });
+        mesaJugadores.forEach(element => { element.innerHTML = '' });
     }
 
     //* Esta funcion crea una nueva baraja
@@ -26,6 +35,13 @@ const miModulo = (() => {
             }
         }
         return deck = _.shuffle(deck);
+    }
+    const alerta = (mensaje) =>{
+        if(!isAlert){
+            isAlert = true
+            alert(mensaje)
+            disableButton(true, true);
+        }
     }
 
     //* Esta funcion me permite tomar una carta
@@ -50,7 +66,6 @@ const miModulo = (() => {
         else {
             puntosJugadores[jugador] += valorCarta(carta);
         }
-        console.log(puntosJugadores);
         smallJugadores[jugador].innerText = puntosJugadores[jugador];
         const imgCarta = document.createElement('img');
         imgCarta.classList.add('carta');
@@ -60,25 +75,56 @@ const miModulo = (() => {
     // Turno Computadora
     const turnoComputadora = (puntosMinimos) => {
 
-        do {
-            acumularPuntos(1);
-            if (puntosMinimos > 21) {
-                break;
-            }
-        }
-        while (puntosJugadores[1] < puntosMinimos);
-        setTimeout(() => {
-            if (puntosJugadores[1] < 22) {
-                if (puntosJugadores[1] > puntosJugadores[0]) {
-                    alert('Perdiste machucao');
+        if(btnPedirDisable){
+            do {
+                acumularPuntos(1);
+                if (puntosMinimos > 21) {
+                    break;
                 }
-                else {
-                    alert('Ganaste Aweonao!!!');
+            }
+            while (puntosJugadores[1] < puntosMinimos);
+        }
+        else{
+            acumularPuntos(1);
+        }
+
+        setTimeout(() => {
+            if(btnPedirDisable){
+                if(puntosJugadores[1] > 21){
+                    alerta('Ganaste!!!');
+                }
+                else if(puntosJugadores[1] == 21){
+                    if(puntosJugadores[1] == puntosJugadores[0]){
+                        alerta('Empate');
+                    }
+                    else{
+                        alerta('Perdiste :(');
+                    }
+                }
+                else if(puntosJugadores[1] > puntosJugadores[0]){
+                    alerta('Perdiste :(');
+                }
+                else{
+                    alerta('Ganaste!!!');
+                }
+            }
+            else{
+                if(puntosJugadores[1] > 21){
+                    alerta('Ganaste!!!');
+                }
+                else if(puntosJugadores[1] == 21){
+                    if(puntosJugadores[1] == puntosJugadores[0]){
+                        alerta('Empate');
+                    }
+                    else{
+                        alerta('Perdiste :(');
+                    }
                 }
             }
         }, 500)
     }
     const disableButton = (btnPedirDisable, btnDetenerDisabled) => {
+        btnPedirDisable = btnPedirDisable
         botones.btnPedir.disabled = btnPedirDisable;
         botones.btnDetener.disabled = btnDetenerDisabled;
     }
@@ -86,16 +132,20 @@ const miModulo = (() => {
     //*Eventos
     botones.btnPedir.addEventListener('click', () => {
         acumularPuntos(0);
-        if (puntosJugadores[0] > 21) {
-            alert('Perdiste machucao');
-            disableButton(true, true);
-            turnoComputadora(puntosJugadores[0]);
-        }
-        else if (puntosJugadores[0] == 21) {
-            alert('Ganaste Aweonao!!!');
-            disableButton(true, true);
-            turnoComputadora(puntosJugadores[0]);
-        }
+        
+        setTimeout(() => {
+            if (puntosJugadores[0] > 21) {
+                alerta('Perdiste');
+            }
+            else if (puntosJugadores[0] == 21) {
+                alerta('Ganaste!!!');
+            }
+            else{
+                turnoComputadora(puntosJugadores[0]);
+            }
+        }, 100)
+        
+
     })
     botones.btnDetener.addEventListener('click', () => {
         disableButton(true, true);
@@ -103,13 +153,8 @@ const miModulo = (() => {
     })
 
     botones.btnNuevo.addEventListener('click', () => {
-        console.clear
         main();
-        disableButton(false, false);
-        for (let i = 0; i < puntosJugadores.length; i++)
-            puntosJugadores[i] = 0
-        smallJugadores.forEach(element => { element.innerText = 0 });
-        mesaJugadores.forEach(element => { element.innerHTML = '' });
+
     })
 
     return {
